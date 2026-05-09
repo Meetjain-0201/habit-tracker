@@ -58,3 +58,25 @@ create table if not exists weight_log (
   weight_kg numeric not null,
   created_at timestamp default now()
 );
+
+-- ROW LEVEL SECURITY
+-- Single user personal app, the anon key is the app's only client.
+-- Permissive policies are intentional. Do not copy this pattern for multi user apps.
+alter table user_profile enable row level security;
+alter table daily_logs enable row level security;
+alter table weekly_summary enable row level security;
+alter table weight_log enable row level security;
+
+drop policy if exists "anon_all_user_profile" on user_profile;
+drop policy if exists "anon_all_daily_logs" on daily_logs;
+drop policy if exists "anon_all_weekly_summary" on weekly_summary;
+drop policy if exists "anon_all_weight_log" on weight_log;
+
+create policy "anon_all_user_profile"
+  on user_profile for all to anon using (true) with check (true);
+create policy "anon_all_daily_logs"
+  on daily_logs for all to anon using (true) with check (true);
+create policy "anon_all_weekly_summary"
+  on weekly_summary for all to anon using (true) with check (true);
+create policy "anon_all_weight_log"
+  on weight_log for all to anon using (true) with check (true);
