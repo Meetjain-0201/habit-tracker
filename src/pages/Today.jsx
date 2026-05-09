@@ -1,7 +1,11 @@
+import { useEffect } from 'react'
 import { format, isThursday } from 'date-fns'
 import { useDailyLog } from '../hooks/useDailyLog'
+import { useWeeklyData } from '../hooks/useWeeklyData'
 import { USER_PROFILE, HABITS } from '../data/habits'
 import HabitRow from '../components/HabitRow'
+import AICheckin from '../components/AICheckin'
+import { requestNotificationPermission, scheduleDailyReminders } from '../utils/notifications'
 
 const BOOLEAN_FIELDS = [
   'gym_done',
@@ -39,10 +43,21 @@ function Section({ title, children }) {
 
 export default function Today() {
   const { log, loading, error, updateLog } = useDailyLog()
+  const { weekData } = useWeeklyData()
   const today = new Date()
   const dateStr = format(today, 'EEEE, MMMM d')
   const greeting = getGreeting()
   const isThurs = isThursday(today)
+
+  useEffect(() => {
+    let cancelled = false
+    requestNotificationPermission().then(({ granted }) => {
+      if (!cancelled && granted) scheduleDailyReminders()
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   if (loading) {
     return (
@@ -116,6 +131,8 @@ export default function Today() {
           </div>
         </div>
       </header>
+
+      <AICheckin log={log} weekData={weekData} />
 
       <Section title="💊 Supplements">
         <HabitRow
