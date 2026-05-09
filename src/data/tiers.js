@@ -1,0 +1,33 @@
+export const TIERS = {
+  1: {
+    label: 'Tier 1',
+    sublabel: 'Building baseline',
+    gym: 3,
+    gym_label: '3 days/week',
+    applications: 2,
+    cold_outreach: 1,
+    streak_days: 7,
+    description: 'Build the habit. Hit 80% completion for 7 consecutive days to advance.',
+  },
+  2: {
+    label: 'Tier 2',
+    sublabel: 'Building momentum',
+    gym_min: 4,
+    gym_max: 5,
+    gym_label: '4 to 5 days/week',
+    applications: 5,
+    cold_outreach: 1,
+    streak_days: 14,
+    description: 'Increase intensity. Hit 80% for 14 consecutive days to reach the full routine.',
+  },
+  3: {
+    label: 'Tier 3',
+    sublabel: 'Full routine',
+    gym: 6,
+    gym_label: '6 days/week',
+    applications: 10,
+    cold_outreach: 1,
+    streak_days: null,
+    description: 'Peak target state. Maintain consistency.',
+  },
+}

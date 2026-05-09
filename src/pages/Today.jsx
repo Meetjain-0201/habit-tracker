@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { format, isThursday } from 'date-fns'
 import { useDailyLog } from '../hooks/useDailyLog'
 import { useWeeklyData } from '../hooks/useWeeklyData'
+import { useUserProfile } from '../hooks/useUserProfile'
 import { USER_PROFILE, HABITS } from '../data/habits'
 import HabitRow from '../components/HabitRow'
 import AICheckin from '../components/AICheckin'
@@ -44,6 +45,7 @@ function Section({ title, children }) {
 export default function Today() {
   const { log, loading, error, updateLog } = useDailyLog()
   const { weekData } = useWeeklyData()
+  const { profile } = useUserProfile()
   const today = new Date()
   const dateStr = format(today, 'EEEE, MMMM d')
   const greeting = getGreeting()
@@ -84,7 +86,8 @@ export default function Today() {
   const totalCount = BOOLEAN_FIELDS.length
   const pct = totalCount === 0 ? 0 : (doneCount / totalCount) * 100
 
-  const tierKey = `tier${USER_PROFILE.current_tier}`
+  const currentTier = profile?.current_tier ?? USER_PROFILE.current_tier
+  const tierKey = `tier${currentTier}`
   const jobTarget = HABITS.JOB_APPLICATIONS[tierKey]
   const waterGlasses = log.water_glasses ?? 0
   const jobCount = log.job_applications_count ?? 0
@@ -282,7 +285,7 @@ export default function Today() {
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-white">Job applications</span>
             <span className="text-xs text-gray-400">
-              Tier {USER_PROFILE.current_tier}: aim for {jobTarget} today
+              Tier {currentTier}: aim for {jobTarget} today
             </span>
           </div>
           <div className="flex items-center gap-3 mt-2">

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useWeeklyData } from '../hooks/useWeeklyData'
 import { useWeightLog } from '../hooks/useWeightLog'
+import { useUserProfile } from '../hooks/useUserProfile'
 import { USER_PROFILE, HABITS } from '../data/habits'
 
 const STATUS_BADGE = {
@@ -36,6 +37,7 @@ function Spinner() {
 export default function Progress() {
   const { weekData, loading, error } = useWeeklyData()
   const { weights, addWeight, error: weightErr } = useWeightLog()
+  const { profile } = useUserProfile()
   const [draftKg, setDraftKg] = useState(USER_PROFILE.weight_kg)
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function Progress() {
   if (!weekData) return null
 
   const status = STATUS_BADGE[weekData.gym_status]
-  const currentTier = USER_PROFILE.current_tier
+  const currentTier = profile?.current_tier ?? USER_PROFILE.current_tier
   const weeklyAppTarget = APP_WEEKLY_TARGET[currentTier] ?? APP_WEEKLY_TARGET[1]
   const appProgress = Math.min(
     100,
