@@ -1,5 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../context/ToastContext'
+
+const QUIET_FIELDS = new Set(['water_glasses', 'gym_quality'])
 
 function getTodayDate() {
   const now = new Date()
@@ -10,6 +13,7 @@ function getTodayDate() {
 }
 
 export function useDailyLog() {
+  const { showToast } = useToast()
   const [log, setLog] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -32,6 +36,7 @@ export function useDailyLog() {
 
       if (fetchErr) {
         setError(fetchErr)
+        showToast(`Could not load today's log: ${fetchErr.message}`, 'error')
         setLoading(false)
         return
       }
@@ -52,6 +57,7 @@ export function useDailyLog() {
 
       if (insertErr) {
         setError(insertErr)
+        showToast(`Could not create today's log: ${insertErr.message}`, 'error')
       } else {
         setLog(inserted)
       }
@@ -62,7 +68,7 @@ export function useDailyLog() {
     return () => {
       cancelled = true
     }
-  }, [today])
+  }, [today, showToast])
 
   const updateLog = useCallback(
     async (field, value) => {
@@ -80,11 +86,15 @@ export function useDailyLog() {
       if (updateErr) {
         setLog(previous)
         setError(updateErr)
+        showToast(`Save failed: ${updateErr.message}`, 'error')
         return
       }
       setLog(data)
+      if (!QUIET_FIELDS.has(field)) {
+        showToast('Saved ✓', 'success')
+      }
     },
-    [log, today]
+    [log, today, showToast]
   )
 
   return { log, loading, error, updateLog }

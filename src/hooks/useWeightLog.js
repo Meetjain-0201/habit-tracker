@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../context/ToastContext'
 
 export function useWeightLog() {
+  const { showToast } = useToast()
   const [weights, setWeights] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -20,6 +22,7 @@ export function useWeightLog() {
       if (cancelled) return
       if (err) {
         setError(err)
+        showToast(`Could not load weight log: ${err.message}`, 'error')
       } else {
         setWeights(data || [])
       }
@@ -30,24 +33,29 @@ export function useWeightLog() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [showToast])
 
-  const addWeight = useCallback(async (kg) => {
-    const today = format(new Date(), 'yyyy-MM-dd')
-    const { data, error: err } = await supabase
-      .from('weight_log')
-      .insert({ log_date: today, weight_kg: kg })
-      .select()
-      .single()
+  const addWeight = useCallback(
+    async (kg) => {
+      const today = format(new Date(), 'yyyy-MM-dd')
+      const { data, error: err } = await supabase
+        .from('weight_log')
+        .insert({ log_date: today, weight_kg: kg })
+        .select()
+        .single()
 
-    if (err) {
-      setError(err)
-      return
-    }
-    setWeights((prev) =>
-      [...prev, data].sort((a, b) => a.log_date.localeCompare(b.log_date))
-    )
-  }, [])
+      if (err) {
+        setError(err)
+        showToast(`Could not save weight: ${err.message}`, 'error')
+        return
+      }
+      setWeights((prev) =>
+        [...prev, data].sort((a, b) => a.log_date.localeCompare(b.log_date))
+      )
+      showToast('Weight logged ✓', 'success')
+    },
+    [showToast]
+  )
 
   return { weights, loading, error, addWeight }
 }

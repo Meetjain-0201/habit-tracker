@@ -1,24 +1,13 @@
 import { useEffect, useState } from 'react'
 import { format, subDays, startOfDay } from 'date-fns'
 import { supabase } from '../lib/supabase'
-
-const BOOLEAN_FIELDS = [
-  'gym_done',
-  'sauna_done',
-  'skin_morning_done',
-  'skin_evening_done',
-  'hair_oil_done',
-  'b12_done',
-  'calcium_morning_done',
-  'calcium_evening_done',
-  'protein_shake_done',
-  'fruit_done',
-  'breakfast_done',
-  'lunch_done',
-  'dinner_done',
-  'cold_outreach_done',
-  'work_prep_done',
-]
+import { useToast } from '../context/ToastContext'
+import {
+  BOOLEAN_FIELDS,
+  gymStatus,
+  avgWater,
+  rowCompletionPct,
+} from '../utils/weeklyStats'
 
 const HISTORY_DAYS = 30
 
@@ -26,13 +15,8 @@ function dateStr(d) {
   return format(d, 'yyyy-MM-dd')
 }
 
-function rowCompletionPct(row) {
-  if (!row) return 0
-  const done = BOOLEAN_FIELDS.filter((f) => row[f]).length
-  return (done / BOOLEAN_FIELDS.length) * 100
-}
-
 export function useWeeklyData() {
+  const { showToast } = useToast()
   const [weekData, setWeekData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -57,6 +41,7 @@ export function useWeeklyData() {
       if (cancelled) return
       if (err) {
         setError(err)
+        showToast(`Could not load weekly data: ${err.message}`, 'error')
         setLoading(false)
         return
       }
@@ -75,13 +60,10 @@ export function useWeeklyData() {
       }
 
       const gymDays = last7.filter((d) => d.row?.gym_done).length
-      const gymStatus = gymDays >= 4 ? 'great' : gymDays >= 2 ? 'acceptable' : 'bad'
+      const status = gymStatus(gymDays)
 
       const watersWith = last7.filter((d) => d.row).map((d) => d.row.water_glasses ?? 0)
-      const avgWater =
-        watersWith.length > 0
-          ? watersWith.reduce((a, b) => a + b, 0) / watersWith.length
-          : 0
+      const water = avgWater(watersWith)
 
       const totalApps = last7.reduce(
         (s, d) => s + (d.row?.job_applications_count ?? 0),
@@ -126,8 +108,8 @@ export function useWeeklyData() {
       if (cancelled) return
       setWeekData({
         gym_days_this_week: gymDays,
-        gym_status: gymStatus,
-        avg_water_glasses: avgWater,
+        gym_status: status,
+        avg_water_glasses: water,
         total_applications: totalApps,
         total_outreach: totalOutreach,
         skin_morning_streak: skinStreak,
@@ -141,7 +123,7 @@ export function useWeeklyData() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [showToast])
 
   return { weekData, loading, error }
 }
