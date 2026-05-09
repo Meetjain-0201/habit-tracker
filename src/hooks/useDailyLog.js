@@ -70,6 +70,22 @@ export function useDailyLog() {
     }
   }, [today, showToast])
 
+  const refetch = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    const { data, error: err } = await supabase
+      .from('daily_logs')
+      .select('*')
+      .eq('log_date', today)
+      .maybeSingle()
+    if (err) {
+      setError(err)
+    } else if (data) {
+      setLog(data)
+    }
+    setLoading(false)
+  }, [today])
+
   const updateLog = useCallback(
     async (field, value) => {
       if (!log) return
@@ -97,5 +113,5 @@ export function useDailyLog() {
     [log, today, showToast]
   )
 
-  return { log, loading, error, updateLog }
+  return { log, loading, error, updateLog, refetch }
 }

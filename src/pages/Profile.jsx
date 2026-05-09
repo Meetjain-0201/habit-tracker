@@ -68,7 +68,7 @@ export default function Profile() {
     if (!card || !container) return
     const offset =
       card.offsetLeft - (container.clientWidth - card.clientWidth) / 2
-    container.scrollLeft = Math.max(0, offset)
+    container.scrollTo({ left: Math.max(0, offset), behavior: 'smooth' })
   }, [])
 
   const lastWeight =
@@ -180,7 +180,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="px-4 pt-6">
+    <div className="px-4 pt-6 animate-fadeIn">
       <h1 className="text-2xl font-semibold text-white mb-6">Profile</h1>
 
       <Section title="👤 Your Profile">

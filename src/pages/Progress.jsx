@@ -86,7 +86,7 @@ export default function Progress() {
     : 100
 
   return (
-    <div className="px-4 pt-6">
+    <div className="px-4 pt-6 animate-fadeIn">
       <h1 className="text-2xl font-semibold text-white mb-6">Progress</h1>
 
       <Section title="📅 This Week">

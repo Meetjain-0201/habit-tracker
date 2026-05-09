@@ -1,30 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { format, isThursday } from 'date-fns'
 import { useDailyLog } from '../hooks/useDailyLog'
 import { useWeeklyData } from '../hooks/useWeeklyData'
 import { useUserProfile } from '../hooks/useUserProfile'
 import { USER_PROFILE, HABITS } from '../data/habits'
+import { BOOLEAN_FIELDS } from '../utils/weeklyStats'
 import HabitRow from '../components/HabitRow'
 import AICheckin from '../components/AICheckin'
 import { requestNotificationPermission, scheduleDailyReminders } from '../utils/notifications'
-
-const BOOLEAN_FIELDS = [
-  'gym_done',
-  'sauna_done',
-  'skin_morning_done',
-  'skin_evening_done',
-  'hair_oil_done',
-  'b12_done',
-  'calcium_morning_done',
-  'calcium_evening_done',
-  'protein_shake_done',
-  'fruit_done',
-  'breakfast_done',
-  'lunch_done',
-  'dinner_done',
-  'cold_outreach_done',
-  'work_prep_done',
-]
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -43,13 +26,18 @@ function Section({ title, children }) {
 }
 
 export default function Today() {
-  const { log, loading, error, updateLog } = useDailyLog()
+  const { log, loading, error, updateLog, refetch } = useDailyLog()
   const { weekData } = useWeeklyData()
   const { profile } = useUserProfile()
   const today = new Date()
   const dateStr = format(today, 'EEEE, MMMM d')
   const greeting = getGreeting()
   const isThurs = isThursday(today)
+
+  const [pulling, setPulling] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
+  const refreshingRef = useRef(false)
+  const touchState = useRef({ startY: 0, active: false, currentPull: 0 })
 
   useEffect(() => {
     let cancelled = false
@@ -60,6 +48,58 @@ export default function Today() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    refreshingRef.current = refreshing
+  }, [refreshing])
+
+  useEffect(() => {
+    function onStart(e) {
+      if (window.scrollY > 0 || refreshingRef.current) return
+      touchState.current = {
+        startY: e.touches[0].clientY,
+        active: true,
+        currentPull: 0,
+      }
+    }
+    function onMove(e) {
+      if (!touchState.current.active) return
+      if (window.scrollY > 0) {
+        touchState.current.active = false
+        setPulling(0)
+        return
+      }
+      const delta = e.touches[0].clientY - touchState.current.startY
+      if (delta > 0) {
+        const clamped = Math.min(delta, 120)
+        touchState.current.currentPull = clamped
+        setPulling(clamped)
+      }
+    }
+    async function onEnd() {
+      if (!touchState.current.active) return
+      const finalPull = touchState.current.currentPull
+      touchState.current.active = false
+      setPulling(0)
+      if (finalPull >= 80) {
+        setRefreshing(true)
+        try {
+          await refetch?.()
+        } finally {
+          setRefreshing(false)
+        }
+      }
+    }
+
+    window.addEventListener('touchstart', onStart, { passive: true })
+    window.addEventListener('touchmove', onMove, { passive: true })
+    window.addEventListener('touchend', onEnd)
+    return () => {
+      window.removeEventListener('touchstart', onStart)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onEnd)
+    }
+  }, [refetch])
 
   if (loading) {
     return (
@@ -114,8 +154,28 @@ export default function Today() {
     updateLog('wake_time', `${hh}:${mm}:00`)
   }
 
+  const showEmptyState = doneCount === 0
+  const pullProgress = Math.min(pulling / 80, 1)
+
   return (
-    <div className="px-4 pt-6">
+    <div className="px-4 pt-6 animate-fadeIn">
+      {(pulling > 0 || refreshing) && (
+        <div
+          className="fixed left-1/2 z-40 pointer-events-none"
+          style={{
+            top: '0.5rem',
+            transform: `translateX(-50%) translateY(${refreshing ? 8 : Math.min(pulling - 24, 16)}px)`,
+            opacity: refreshing ? 1 : pullProgress,
+          }}
+        >
+          <div
+            className={`w-6 h-6 border-2 border-[#22c55e] border-t-transparent rounded-full ${
+              refreshing ? 'animate-spin' : ''
+            }`}
+            style={!refreshing ? { transform: `rotate(${pulling * 3}deg)` } : undefined}
+          />
+        </div>
+      )}
       <header className="mb-6">
         <h1 className="text-2xl font-semibold text-white">
           {greeting}, {USER_PROFILE.name} 👋
@@ -134,6 +194,14 @@ export default function Today() {
           </div>
         </div>
       </header>
+
+      {showEmptyState && (
+        <div className="bg-[#0f0f0f] border border-[#22c55e] rounded-2xl p-4 mb-4 text-center">
+          <p className="text-sm text-white">
+            Fresh day, {USER_PROFILE.name}. Let's make it count 💪
+          </p>
+        </div>
+      )}
 
       <AICheckin log={log} weekData={weekData} />
 

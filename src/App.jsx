@@ -11,7 +11,10 @@ export default function App() {
     <ToastProvider>
       <UserProfileProvider>
         <BrowserRouter>
-          <div className="min-h-screen bg-[#0f0f0f] pb-20">
+          <div
+            className="min-h-screen bg-[#0f0f0f]"
+            style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+          >
             <Routes>
               <Route path="/" element={<Today />} />
               <Route path="/progress" element={<Progress />} />

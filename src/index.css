@@ -8,6 +8,7 @@ body {
   font-family: 'Inter', sans-serif;
   max-width: 430px;
   margin: 0 auto;
+  padding-top: env(safe-area-inset-top);
 }
 
 @keyframes toast-in {
@@ -15,3 +16,9 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 .toast-in { animation: toast-in 200ms ease-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.2s ease-out; }
