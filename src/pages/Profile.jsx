@@ -361,7 +361,7 @@ export default function Profile() {
               Evening
             </div>
             <div className="text-gray-200">
-              Cleanser, Retinol (start 2-3x/week), Moisturizer
+              Cleanser, Moisturizer. Adapalene 0.1% once a week (it's harsh).
             </div>
           </div>
           <div>

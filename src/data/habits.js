@@ -1,7 +1,7 @@
 export const HABITS = {
   GYM: { target: 6, acceptable: 4, bad_threshold: 2, unit: "days/week", tier1_target: 3 },
   SKIN_MORNING: { daily: true, steps: ["cleanser", "niacinamide", "moisturizer", "SPF"] },
-  SKIN_EVENING: { daily: true, steps: ["cleanser", "retinol", "moisturizer"] },
+  SKIN_EVENING: { daily: true, steps: ["cleanser", "moisturizer"], weekly_extra: { day: "Sunday", step: "adapalene 0.1%" } },
   HAIR_OIL: { day: "Thursday", weekly: true },
   B12: { time: "07:30", daily: true, note: "before breakfast, empty stomach" },
   CALCIUM_MAG_ZINC_D3: { times: ["13:30", "19:00"], with_food: true, note: "prevents acid reflux" },

@@ -235,7 +235,7 @@ export default function Today() {
         />
         <HabitRow
           label="Evening routine"
-          subtext={!log.skin_evening_done ? 'Cleanser, Retinol, Moisturizer' : null}
+          subtext={!log.skin_evening_done ? 'Cleanser, Moisturizer (Adapalene once a week)' : null}
           done={log.skin_evening_done}
           onToggle={() => toggle('skin_evening_done')}
         />

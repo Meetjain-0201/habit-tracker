@@ -46,7 +46,7 @@ export function scheduleDailyReminders() {
     { hour: 16, minute: 0, title: 'Gym check ⏰', body: 'Gym at 4PM or 7PM today? Lock it in.' },
     { hour: 19, minute: 0, title: 'Evening check-in 🌙', body: "Dinner + Calcium/Mag/Zinc/D3. How's the day going?" },
     { hour: 20, minute: 0, title: 'Applications 💼', body: 'Done your cold outreach and job apps today?' },
-    { hour: 21, minute: 0, title: 'Skin evening routine 🌙', body: 'Cleanser, Retinol, Moisturizer' },
+    { hour: 21, minute: 0, title: 'Skin evening routine 🌙', body: 'Cleanser, Moisturizer (Adapalene once a week)' },
     { hour: 23, minute: 0, title: 'Sleep time 😴', body: 'Aim to sleep by 11PM. Log your wake time for tomorrow.' },
   ]
   return reminders.map((r) =>
